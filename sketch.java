@@ -14,7 +14,12 @@ class Entity {
     int boundBodWidth;
     int boundBoxHeight;
 
-    int[] color;
+    int[] Color;
+
+    void renderEntity() {
+        fill(Color[0], Color[1], Color[2]);
+        rect(positionX, positionY, boundBodWidth, boundBoxHeight);
+    }
 }
 
 class Player extends Entity {
@@ -39,7 +44,7 @@ class Player extends Entity {
         this.boundBodWidth = 50;
         this.boundBoxHeight = 100;
 
-        this.color = new int[] { 20, 140, 200 };
+        this.Color = new int[] { 20, 140, 200 };
     }
 }
 
@@ -115,10 +120,15 @@ void draw() {
       case 0:
         game.levels.get(0).renderLevel();
     }
+    game.player.renderEntity();
+    
 }
 
 class Main {
+
     public ArrayList<Level> levels = new ArrayList<Level>();
+    public ArrayList<Enemy> enemies = new ArrayList<Enemy>();
+    public Player player = new Player();
 
     public void start() {
         levels.add(new Level(5));
@@ -140,11 +150,6 @@ class Main {
         levels.get(1).addPlatform(new int[] { 300,   400,   500,   420  }, "Normal", greyPlatform);
         levels.get(1).addPlatform(new int[] { 600,   600,   700,   650  }, "Normal", greyPlatform);
         levels.get(1).addPlatform(new int[] { 0,     800,   200,   820  }, "Ice",    icePlatform );
-    }
-
-    private void mainLoop() {
-        while (true) {
-            // Your main game loop logic would go here
-        }
+        
     }
 }
