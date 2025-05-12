@@ -65,7 +65,7 @@ class Player extends Entity {
         // Initalize entity variables. Position, velocity, bounding box, ect
         this.velocityX = 0;
         this.velocityY = 0;
-        this.positionX = 0;
+        this.positionX = width / 2;
         this.positionY =  height / 2;
         this.maxVelocityX = 100;
         this.maxVelocityY = 100;
@@ -116,10 +116,13 @@ class Platform {
         boolean[] edgesColliding = new boolean[5];
         Arrays.fill(edgesColliding, false);
 
-        if (playerY > this.platformCoordinates[1] && playerY < this.platformCoordinates[2]) edgesColliding[1] = true;
-        if (playerX + playerWidth > this.platformCoordinates[0] && playerX + playerWidth < this.platformCoordinates[3]) edgesColliding[2] = true;
-        if (playerY + playerHeight > this.platformCoordinates[1] && playerY + playerHeight < this.platformCoordinates[2]) edgesColliding[3] = true;
-        if (playerX > this.platformCoordinates[0] && playerX < this.platformCoordinates[3]) edgesColliding[4] = true;
+        if (playerY > this.platformCoordinates[1] && playerY < this.platformCoordinates[1] + this.platformCoordinates[3]) {
+            edgesColliding[1] = true;
+            println("True");
+        }
+        if (playerX + playerWidth > this.platformCoordinates[0] && playerX + playerWidth < this.platformCoordinates[0] + this.platformCoordinates[2]) edgesColliding[2] = true;
+        if (playerY + playerHeight > this.platformCoordinates[1] && playerY + playerHeight < this.platformCoordinates[1] + this.platformCoordinates[3]) edgesColliding[3] = true;
+        if (playerX > this.platformCoordinates[0] && playerX < this.platformCoordinates[0] + this.platformCoordinates[2]) edgesColliding[4] = true;
 
         if (!edgesColliding[1] && !edgesColliding[2] && !edgesColliding[3] && !edgesColliding[4]) {
             edgesColliding[0] = true; // No collision
@@ -195,47 +198,7 @@ void setup() {
 void draw() {
     background(0); // Clear the background each frame
 
-    // Render the current level (Index 0 is the current level)
-    game.levels.get(0).renderLevel();
-    // Render the player
-    game.player.renderEntity();
-    
-    // Apply the velocity limitis to the player
-    if (Math.abs(game.player.velocityY) > game.player.maxVelocityY) {
-        if (game.player.velocityY < 0) game.player.velocityY = game.player.maxVelocityY * -1;
-        else game.player.velocityY = game.player.maxVelocityY;
-    }
-    if (Math.abs(game.player.velocityX) > game.player.maxVelocityX) {
-        if (game.player.velocityX < 0) game.player.velocityX = game.player.maxVelocityX * -1;
-        else game.player.velocityX = game.player.maxVelocityX;
-    }
-
-    // Update player vertical position and velocity
-    game.player.positionY = constrain(game.player.positionY, 0, height - game.player.boundBoxHeight);
-    game.player.velocityY += 2;
-    game.player.positionY += game.player.velocityY;
-    // Why did I use terneries? WHYYYYYYYYYYYYYYYYYYYYYYYYYY-
-    game.player.velocityY = game.player.positionY == 0 ? 0 : game.player.positionY >= height - game.player.boundBoxHeight ? 0 : game.player.velocityY;
-
-    // Update player horizontal position and velocity
-    game.player.positionX = constrain(game.player.positionX, 0, width - game.player.boundBodWidth);
-    game.player.positionX += game.player.velocityX;
-    game.player.velocityX = game.player.positionX == 0 ? 0 : game.player.positionX >= width - game.player.boundBoxHeight ? 0 : game.player.velocityX;
-
-    // Uses Collections.rotate to ensure the current level is updated to index 0
-    if (game.player.positionY <= 0) {
-        Collections.rotate(game.levels, 1);
-        game.player.velocityY = 0;
-        game.player.positionY = height / 2;
-    }
-
-    // Uses Collections.rotate to ensure the current level is updated to index 0
-    // Also makes sure you're not at the bottom already
-    if (game.player.positionY >= height - game.player.boundBoxHeight && game.levels.get(0).levelID > 0) {
-        Collections.rotate(game.levels, -1);
-        game.player.velocityY = 0;
-        game.player.positionY = height / 2;
-    }
+    game.updateGame();
 }
 
 // There are better ways to handle key input ._.
@@ -262,26 +225,75 @@ class Main {
     public Player player = new Player();
 
     public void start() {
-        levels.add(new Level(5, 0));
         levels.add(new Level(7, 1));
+        levels.add(new Level(5, 0));
 
         int[] greyPlatform = { 100, 100, 100 };
         int[] icePlatform =  { 10,  200, 240 };
 
         // Certainly one of the ways of all time to create levels
-        levels.get(0).addPlatform(new int[] { 0,     900,   1920,  180 }, "Normal", greyPlatform);
-        levels.get(0).addPlatform(new int[] { 240,   720,   360,   36  }, "Normal", greyPlatform);
-        levels.get(0).addPlatform(new int[] { 720,   450,   150,   360 }, "Normal", greyPlatform);
-        levels.get(0).addPlatform(new int[] { 1200,  630,   480,   36  }, "Normal", greyPlatform);
-        levels.get(0).addPlatform(new int[] { 120,   180,   240,   36  }, "Normal", greyPlatform);
+        levels.get(1).addPlatform(new int[] { 0,     900,   1920,  180 }, "Normal", greyPlatform);
+        levels.get(1).addPlatform(new int[] { 240,   720,   360,   36  }, "Normal", greyPlatform);
+        levels.get(1).addPlatform(new int[] { 720,   450,   150,   360 }, "Normal", greyPlatform);
+        levels.get(1).addPlatform(new int[] { 1200,  630,   480,   36  }, "Normal", greyPlatform);
+        levels.get(1).addPlatform(new int[] { 120,   180,   240,   36  }, "Normal", greyPlatform);
 
-        levels.get(1).addPlatform(new int[] { 0,     600,   800,   50  }, "Normal", greyPlatform);
-        levels.get(1).addPlatform(new int[] { 50,    450,   150,   20  }, "Normal", greyPlatform);
-        levels.get(1).addPlatform(new int[] { 50,    300,   20,    150 }, "Normal", greyPlatform);
-        levels.get(1).addPlatform(new int[] { 150,   300,   100,   20  }, "Normal", greyPlatform);
-        levels.get(1).addPlatform(new int[] { 300,   400,   200,   20  }, "Normal", greyPlatform);
-        levels.get(1).addPlatform(new int[] { 600,   600,   100,   50  }, "Normal", greyPlatform);
-        levels.get(1).addPlatform(new int[] { 0,     800,   200,   20  }, "Ice",    icePlatform );
+        levels.get(0).addPlatform(new int[] { 0,     600,   800,   50  }, "Normal", greyPlatform);
+        levels.get(0).addPlatform(new int[] { 50,    450,   150,   20  }, "Normal", greyPlatform);
+        levels.get(0).addPlatform(new int[] { 50,    300,   20,    150 }, "Normal", greyPlatform);
+        levels.get(0).addPlatform(new int[] { 150,   300,   100,   20  }, "Normal", greyPlatform);
+        levels.get(0).addPlatform(new int[] { 300,   400,   200,   20  }, "Normal", greyPlatform);
+        levels.get(0).addPlatform(new int[] { 600,   600,   100,   50  }, "Normal", greyPlatform);
+        levels.get(0).addPlatform(new int[] { 0,     800,   200,   20  }, "Ice",    icePlatform );
 
     }
+
+    public void updatePlayer() {
+
+        player.velocityX *= 0.9;
+        player.velocityY *= 1.05;
+        player.velocityY -= 1;
+
+        player.positionX = constrain(player.positionX + player.velocityX, 0, width);
+        player.positionY = constrain(player.velocityY + player.velocityY, 0, height);
+
+        /*// Platform collision logic
+        for (Platform platform : levels.get(0).platforms) {
+            if (platform.playerColliding(player.positionY, player.positionX, player.boundBodWidth, player.boundBoxHeight)[1]) {
+                // Top edge of the player is colliding
+                player.velocityY = 0;
+                player.positionY = platform.platformCoordinates[1] + player.boundBoxHeight;
+            }
+            if (platform.playerColliding(player.positionY, player.positionX, player.boundBodWidth, player.boundBoxHeight)[2]) {
+                // Right edge of the player is colliding
+                player.velocityX = 0;
+                player.positionX = platform.platformCoordinates[0] - player.boundBodWidth;
+            }
+            if (platform.playerColliding(player.positionY, player.positionX, player.boundBodWidth, player.boundBoxHeight)[3]) {
+                // Bottom edge of the player is colliding
+                player.velocityY = 0;
+                player.positionY = platform.platformCoordinates[1] + platform.platformCoordinates[3];
+            }
+            if (platform.playerColliding(player.positionY, player.positionX, player.boundBodWidth, player.boundBoxHeight)[4]) {
+                // Left edge of the player is colliding
+                player.velocityX = 0;
+                player.positionX = platform.platformCoordinates[0] + platform.platformCoordinates[2];
+            }
+        }
+        */
+        if (player.positionY <= 0 + player.boundBoxHeight) {
+            Collections.rotate(levels, 1);
+            player.positionY = height - 1;
+        } else if (player.positionY >= height - player.boundBoxHeight) {
+            Collections.rotate(levels, -1);
+            player.positionY = 1;
+        }
+    }
+
+    public void updateGame() {
+        levels.get(0).renderLevel();
+        updatePlayer();
+        player.renderEntity();
+    }
+
 }
