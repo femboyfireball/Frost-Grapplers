@@ -38,7 +38,7 @@ class Player extends Entity {
         this.velocityX = 0;
         this.velocityY = 0;
         this.positionX = 0;
-        this.positionY = 0;
+        this.positionY =  height / 2;
         this.maxVelocityX = 100;
         this.maxVelocityY = 100;
         this.boundBodWidth = 50;
@@ -96,8 +96,8 @@ class Level {
             fill(platform.platformColor[0], platform.platformColor[1], platform.platformColor[2]);
             rect(platform.platformCoordinates[0],
                     platform.platformCoordinates[1],
-                    platform.platformCoordinates[2] - platform.platformCoordinates[0], // Width
-                    platform.platformCoordinates[2] - platform.platformCoordinates[1]  // Height
+                    platform.platformCoordinates[2], // Width
+                    platform.platformCoordinates[3]  // Height
             );
         }
     }
@@ -119,9 +119,49 @@ void draw() {
     switch (level) {
       case 0:
         game.levels.get(0).renderLevel();
+        break;
+      case 1:
+        game.levels.get(1).renderLevel();
+        break;
     }
     game.player.renderEntity();
     
+    if (Math.abs(game.player.velocityY) > game.player.maxVelocityY) {
+        if (game.player.velocityY < 0) game.player.velocityY = game.player.maxVelocityY * -1;
+        else game.player.velocityY = game.player.maxVelocityY;
+    }
+    if (Math.abs(game.player.velocityX) > game.player.maxVelocityX) {
+        if (game.player.velocityX < 0) game.player.velocityX = game.player.maxVelocityX * -1;
+        else game.player.velocityX = game.player.maxVelocityX;
+    }
+    game.player.positionY = constrain(game.player.positionY, 0, height - game.player.boundBoxHeight);
+    game.player.velocityY += 2;
+    game.player.positionY += game.player.velocityY;
+    game.player.velocityY = game.player.positionY == 0 ? 0 : game.player.positionY >= height - game.player.boundBoxHeight ? 0 : game.player.velocityY;
+
+    game.player.positionX = constrain(game.player.positionX, 0, width - game.player.boundBodWidth);
+    game.player.positionX += game.player.velocityX;
+    game.player.velocityX = game.player.positionX == 0 ? 0 : game.player.positionX >= width - game.player.boundBoxHeight ? 0 : game.player.velocityX;
+    if (game.player.positionY == 0) {
+        level++;
+        game.player.velocityY = 0;
+        game.player.positionY = height / 2;
+    }
+}
+
+void keyPressed() {
+    if (key == 'w') {
+        game.player.velocityY -= 25;
+    }
+    if (key == 's') {
+        game.player.velocityY += 10;
+    }
+    if (key == 'a') {
+        game.player.velocityX -= 10;
+    }
+    if (key == 'd') {
+        game.player.velocityX += 10;
+    }
 }
 
 class Main {
@@ -143,13 +183,13 @@ class Main {
         levels.get(0).addPlatform(new int[] { 1200,  630,   480,   36  }, "Normal", greyPlatform);
         levels.get(0).addPlatform(new int[] { 120,   180,   240,   36  }, "Normal", greyPlatform);
 
-        levels.get(1).addPlatform(new int[] { 0,     600,   800,   650  }, "Normal", greyPlatform);
-        levels.get(1).addPlatform(new int[] { 50,    450,   200,   470  }, "Normal", greyPlatform);
-        levels.get(1).addPlatform(new int[] { 50,    300,   70,    450  }, "Normal", greyPlatform);
-        levels.get(1).addPlatform(new int[] { 150,   300,   250,   320  }, "Normal", greyPlatform);
-        levels.get(1).addPlatform(new int[] { 300,   400,   500,   420  }, "Normal", greyPlatform);
-        levels.get(1).addPlatform(new int[] { 600,   600,   700,   650  }, "Normal", greyPlatform);
-        levels.get(1).addPlatform(new int[] { 0,     800,   200,   820  }, "Ice",    icePlatform );
-        
+        levels.get(1).addPlatform(new int[] { 0,     600,   800,   50  }, "Normal", greyPlatform);
+        levels.get(1).addPlatform(new int[] { 50,    450,   150,   20  }, "Normal", greyPlatform);
+        levels.get(1).addPlatform(new int[] { 50,    300,   20,    150 }, "Normal", greyPlatform);
+        levels.get(1).addPlatform(new int[] { 150,   300,   100,   20  }, "Normal", greyPlatform);
+        levels.get(1).addPlatform(new int[] { 300,   400,   200,   20  }, "Normal", greyPlatform);
+        levels.get(1).addPlatform(new int[] { 600,   600,   100,   50  }, "Normal", greyPlatform);
+        levels.get(1).addPlatform(new int[] { 0,     800,   200,   20  }, "Ice",    icePlatform );
+
     }
 }
