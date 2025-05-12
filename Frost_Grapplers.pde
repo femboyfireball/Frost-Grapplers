@@ -1,5 +1,6 @@
 int[][][] levels;
 int level;
+int previousLevel; // Added to store the previous level
 //color(173, 216, 230)
 int playerX;
 int playerY;
@@ -76,22 +77,23 @@ void setup() {
   enemyAlive = true;
 
   level = 0;
+  previousLevel = 0; // Initialize previousLevel
   levels = new int[][][] {
     { // Level 1
-      { 0,     900,   1920,  180 }, // Floor
-      { 240,   720,   360,   36  },
-      { 720,   450,   150,   360 },
-      { 1200,  630,   480,   36  },
-      { 120,   180,   240,   36  }
+      { 0,     900,    1920,    180 }, // Floor
+      { 240,    720,    360,     36  },
+      { 720,    450,    150,     360 },
+      { 1200,   630,    480,     36  },
+      { 120,    180,    240,     36  }
     },
     { // Level 2
       { 0,     600, 800, 50  },
-      { 50,    450, 150, 20  },
-      { 50,    300, 20,    150 },
-      { 150,   300, 100, 20  },
-      { 300,   400, 200, 20  },
-      { 600,   600, 100, 50  }, // Added a blue platform for testing
-      { 0, 800, 200, 20} //Added Ice Platform
+      { 50,     450, 150, 20  },
+      { 50,     300, 20,     150 },
+      { 150,    300, 100, 20  },
+      { 300,    400, 200, 20  },
+      { 1000,    600, 100, 50  }, // Added a blue platform for testing
+      { 935, 830, 100, 20} //Added Ice Platform, made it longer
     }
   };
 }
@@ -221,7 +223,6 @@ void updatePlayer() {
         } else {
           isSticking = false;
         }
-
       } else if (pVelocityY < 0) { // Collision from bottom (ceiling)
         playerY = platform[1] + platform[3];
         pVelocityY = 0;
@@ -255,11 +256,19 @@ void updatePlayer() {
     onIce = false;
   }
 
-  // Screen constraints (apply after potential collision adjustments)
+
+
+  // Screen constraints (apply after potential collision adjustments) - REMOVE CONSTRAINTS
   playerX = constrain(playerX, 0, width - playerWidth);
   if (playerX == 0 || playerX == width - playerWidth) pVelocityX = 0;
-  playerY = constrain(playerY, 0, height - playerHeight);
-  if (playerY == 0 || playerY == height - playerHeight) {
+  //playerY = constrain(playerY, 0, height - playerHeight);  <-- REMOVE THIS LINE
+  if (playerY <= 0) { // Changed to check if playerY is less than or equal to 0
+    level = (level + 1) % levels.length; // Move to the next level (wrap around)
+    previousLevel = level - 1;
+    resetPlayerPosition();
+    resetEnemyPosition();
+  }
+  if (playerY == 0) {
     pVelocityY = 0;
     isJumping = false;
     isSticking = false;
@@ -268,6 +277,12 @@ void updatePlayer() {
     canWallCling = true; // Re-enable wall clinging after landing
     releasedCling = false; // Reset here
     onIce = false;
+  }
+  //if player falls off screen
+  if (playerY > height){
+    level = previousLevel;
+    resetPlayerPosition();
+    resetEnemyPosition();
   }
   if (playerY == height - playerHeight && !isJumping) isSticking = false;
 }
@@ -314,7 +329,7 @@ void updateEnemy() {
 
     // Player detection and following
     float distanceToPlayer = dist(enemyX + enemyWidth / 2, enemyY + enemyHeight / 2,
-                                  playerX + playerWidth / 2, playerY + playerHeight / 2);
+                                    playerX + playerWidth / 2, playerY + playerHeight / 2);
 
     boolean canSeePlayer = true; // Declare canSeePlayer here, default to true
     if (distanceToPlayer < enemyViewRange) {
@@ -524,7 +539,31 @@ void resetGame() {
   wallClingTimer = 0;
   releasedCling = false;
   onIce = true; //start on ice
+  level = 0;
+  previousLevel = 0;
 
+  enemyX = 300;
+  enemyY = 820;
+  enemyAlive = true;
+}
+
+void resetPlayerPosition() {
+  playerX = width / 2 - playerWidth / 2;
+  playerY = height - height / 3;
+  pVelocityX = 0;
+  pVelocityY = 0;
+  isJumping = false;
+  isCrouching = false;
+  isAirborne = false;
+  direction = false;
+  isSticking = false;
+  isWallClinging = false;
+  wallClingTimer = 0;
+  releasedCling = false;
+  onIce = true;
+}
+
+void resetEnemyPosition() {
   enemyX = 300;
   enemyY = 820;
   enemyAlive = true;
